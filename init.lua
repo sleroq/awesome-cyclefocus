@@ -60,6 +60,12 @@ cyclefocus = {
     -- `preset_for_offset` (below) gets added to it.
     default_preset = {},
 
+    -- Width as percentage of screen width
+    switcher_width = 24
+
+    -- Switcher position (center/right/left/buttom/top)
+    position = 'center'
+
     --- Templates for entries in the list.
     -- The following arguments get passed to a callback:
     --  - client: the current client object.
@@ -76,8 +82,8 @@ cyclefocus = {
 
         -- Preset for current entry.
         ["0"] = function (preset, args)
-            preset.font = 'sans 14'
-            preset.icon_size = dpi(36)
+            preset.font = 'sans 12'
+            preset.icon_size = dpi(32)
             preset.text = escape_markup(cyclefocus.get_client_title(args.client, true))
             -- Add screen number if there is more than one.
             if screen.count() > 1 then
@@ -1055,12 +1061,21 @@ cyclefocus.cycle = function(startdirection_or_args, args)
         -- Set geometry always, the screen might have changed.
         if not wbox_screen or wbox_screen ~= initial_screen then
             wbox_screen = initial_screen
-            local wa = screen[wbox_screen].workarea
-            local w = math.ceil(wa.width * 0.618)
+            local workarea = screen[wbox_screen].workarea
+            local width = math.ceil(workarea.width * args.switcher_width / 100)
+            local x_offset = 0
+
+            if     args.position == 'left' then
+                x_offset = math.ceil(workarea.x + workarea.width - width)
+            elseif args.position == 'right'  then
+                x_offset = 0
+            else
+                x_offset = math.ceil((workarea.width - width) / 2)
+
+
             wbox:geometry({
-                -- right-align.
-                x = math.ceil(wa.x + wa.width - w),
-                width = w,
+                x = x_offset,
+                width = width,
             })
         end
         local wbox_height = 0
